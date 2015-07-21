@@ -1,9 +1,7 @@
-begin
-  require 'dotenv'
-  Dotenv.load
-rescue LoadError => e
-  puts "DotEnv not loaded, it's OK if you are in Production"
-end
-
-require "sinatra/activerecord/rake"
 require "./app"
+require "sinatra/activerecord/rake"
+require './env' if File.exists?('env.rb')
+
+task :sync_redmine_to_github do
+  ruby "./setup/sync_redmine_to_github.rb"
+end

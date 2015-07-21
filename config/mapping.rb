@@ -5,29 +5,38 @@ class Mapping
   def initialize
   end
 
+  def project
+    {
+      'Guidebook Builder' => {
+        'owner' => 'Guidebook',
+        'project' => 'g3qa'
+        }
+    }
+  end
+
   def priority
     {
-      1 => "Low",
-      2 => "Normal",
-      3 => "High",
-      4 => "Urgent"
+      1 => 'Low',
+      2 => 'Normal',
+      3 => 'High',
+      4 => 'Urgent'
     }
   end
 
   def assignee
     {
-      1 => "gmontard"
+      1 => 'gmontard'
     }
   end
 
   def status
     {
-      1 => "closed",
-      2 => "open"
+      1 => 'closed',
+      2 => 'open'
     }
   end
 
   def default_label
-    "Bug"
+    'Bug'
   end
 end
