@@ -1,11 +1,16 @@
 require_relative '../helpers/github_api'
 require_relative '../helpers/redmine_api'
+require_relative '../helpers/slack_api'
 require_relative '../config/mapping'
 
 # initialize classes
 github_api = GitHubApi.new
 redmine_api = RedmineApi.new
+slack_api = SlackApi.new
 mapping = Mapping.new
+
+puts slack_api.post_message('@abtin', message='test')
+exit
 
 # for each project
 # create a redmine issue for each github issue 

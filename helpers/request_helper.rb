@@ -2,6 +2,14 @@ require 'json'
 require 'httparty'
 
 class RequestError < Exception
+  def initialize(url, response)
+    super('Request "%s" returned with status code "%s" and message "%s" and body "%s"' \
+          %[url, response.code.to_s, response.message.to_s, response.body])
+  end
+end
+
+class InvalidRequestError < Exception
+
 end
 
 class RequestHelper
@@ -10,7 +18,7 @@ class RequestHelper
     @@valid_request_types = ['GET', 'POST']
   end
 
-  def request(type, url, valid_response_codes=[200, 201], **options)
+  def request(type, url, return_raw=false, valid_response_codes=[200, 201], **options)
     query = options[:query] || nil
     headers = options[:headers] || nil
     body = options[:body] || nil
@@ -20,13 +28,12 @@ class RequestHelper
     when 'POST'
       response = HTTParty.post(url, :query => query, :headers => headers, :body => body)
     else
-      raise RequestError, 'Invalid request type "%s". Valid types are "%s"' %s[type, @@valid_request_types.join(',')] 
+      raise InvalidRequestError, 'Invalid request type "%s". Valid types are "%s"' %[type, @@valid_request_types.join(',')] 
     end
-    if !valid_response_codes.include? response.code 
-      puts response.body.class
-      raise RequestError, 'Request "%s" returned with status code "%s" and message "%s" and body "%s"' %[url, response.code.to_s, response.message.to_s, response.body]
+    if !valid_response_codes.include? response.code
+      raise RequestError.new(url, response)
     end
-    return JSON.parse response.body;
+    return return_raw ? response : JSON.parse(response.body);
   end
 
 end

@@ -5,7 +5,7 @@ class GitHubApi
   def initialize
     @@request_helper = RequestHelper.new
     @@headers = {
-      'Authorization'=> 'Bearer ' + ENV['GITHUB_AUTH_TOKEN']
+      'Authorization' => 'Bearer ' + ENV['GITHUB_AUTH_TOKEN']
     }   
   end
   
