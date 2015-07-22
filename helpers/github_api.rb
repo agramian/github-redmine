@@ -1,14 +1,9 @@
-require 'json'
-require 'httparty'
+require_relative 'request_helper'
 
 class GitHubApi
   
-  #puts response.body
-  #puts response.code
-  #response.message
-  #response.headers.inspect
-  
   def initialize
+    @@request_helper = RequestHelper.new
     @@headers = {
       'Authorization'=> 'Bearer ' + ENV['GITHUB_AUTH_TOKEN']
     }   
@@ -18,10 +13,10 @@ class GitHubApi
     $page = 1;
     $issues = [];
     loop do
-      request = HTTParty.get(ENV['GITHUB_BASE_URL'] + 'repos/%s/%s/issues' %[owner, repository],
-                             :headers => @@headers,
-                             :query => {'page' => $page.to_s})
-      response = JSON.parse request.body;
+      response = @@request_helper.request('GET',
+                                          ENV['GITHUB_BASE_URL'] + 'repos/%s/%s/issues' %[owner, repository],
+                                          :headers => @@headers,
+                                          :query => {'page' => $page.to_s})
       if response.any?;
         $issues += response
         $page += 1;

@@ -1,17 +1,16 @@
-require 'json'
-require 'httparty'
-
+require_relative 'request_helper'
 
 class RedmineApi
   
   def initialize
+    @@request_helper = RequestHelper.new
     @@key_param = {'key' => ENV['REDMINE_KEY']}
   end
     
   def get_projects()
-    request = HTTParty.get(ENV['REDMINE_BASE_URL'] + 'projects.json',
-                           :query => @@key_param)
-    response = JSON.parse request.body;
+    response = @@request_helper.request('GET',
+                                        ENV['REDMINE_BASE_URL'] + 'projects.json',
+                                        :query => @@key_param)
     return response['projects']
   end
 
@@ -21,9 +20,7 @@ class RedmineApi
       'subproject_id' => subprojecdt_id,
       'tracker_id' => tracker_id
       }.delete_if { |key, value| value.to_s.strip == '' }
-    request = HTTParty.get(ENV['REDMINE_BASE_URL'] + 'issues.json',
-                           :query => query.merge!(@@key_param))
-    response = JSON.parse request.body;
+    response = @@request_helper.request('GET', ENV['REDMINE_BASE_URL'] + 'issues.json', :query => query.merge!(@@key_param))
     return response
   end
 
@@ -42,12 +39,10 @@ class RedmineApi
       'priority_id' => priority_id,
       'assigned_to_id' => assigned_to_id
       }.delete_if { |key, value| value.to_s.strip == '' }
-    puts body
-    request = HTTParty.post(ENV['REDMINE_BASE_URL'] + 'issues.json',
-                            :query => @@key_param,
-                            :body => {'issue' => body})
-    response = JSON.parse request.body;
-    puts response
+    response = @@request_helper.request('POST',
+                                        ENV['REDMINE_BASE_URL'] + 'issues.json',
+                                        :query => @@key_param,
+                                        :body => {'issue' => body})
     return response
   end  
   
