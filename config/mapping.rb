@@ -3,6 +3,7 @@ class Mapping
   attr_reader :priority, :assignee, :status
 
   def initialize
+    
   end
 
   def project
@@ -10,7 +11,7 @@ class Mapping
       'Guidebook Builder' => {
         'owner' => 'Guidebook',
         'project' => 'g3qa'
-        }
+      }
     }
   end
 

@@ -106,4 +106,6 @@ Attachment: #{attachment})"
       end
     }.compact!
   end
+
 end
+

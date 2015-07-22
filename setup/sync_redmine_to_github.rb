@@ -20,6 +20,9 @@ mapping.project.each do |redmine_project, github_project|
       target_project = p
     end
   end
-  
-  puts target_project
+  #print redmine_api.get_issues(project_id=target_project['id'])
+  redmine_api.create_issue(project_id=target_project['id'],
+                           subject='test create issue via api',
+                           description='qwerqwerqwer')
+                           
 end
