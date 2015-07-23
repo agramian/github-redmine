@@ -4,7 +4,7 @@ class RedmineApi
   
   def initialize
     @@request_helper = RequestHelper.new
-    @@key_param = {'key' => ENV['REDMINE_KEY']}
+    @@key_param = {'key' => ENV['REDMINE_API_KEY']}
   end
     
   def get_projects()
