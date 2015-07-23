@@ -10,6 +10,9 @@ gem 'dotenv'
 
 group :development, :test do
   gem 'rerun'
+  gem 'minitest'
+  gem 'guard'
+  gem 'guard-minitest'
   gem 'racksh'
   gem 'rack-test'
   gem 'factory_girl'

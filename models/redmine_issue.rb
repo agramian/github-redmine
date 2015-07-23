@@ -12,7 +12,7 @@ class RedmineIssue
   end
 
   def api
-    @api ||= HTTParty.get("#{ENV['REDMINE_URL']}/issues/#{id}.json?key=#{ENV['REDMINE_API_KEY']}&include=attachments,journals")
+    @api ||= HTTParty.get("#{ENV['REDMINE_BASE_URL']}/issues/#{id}.json?key=#{ENV['REDMINE_KEY']}&include=attachments,journals")
   end
 
   def title
