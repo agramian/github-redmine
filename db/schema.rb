@@ -13,11 +13,11 @@
 
 ActiveRecord::Schema.define(:version => 20141020110537) do
 
-  create_table 'issues', :force => true do |t|
-    t.integer  'github_id'
-    t.integer  'redmine_id'
-    t.datetime 'created_at', :null => false
-    t.datetime 'updated_at', :null => false
+  create_table "issues", :force => true do |t|
+    t.integer  "github_id"
+    t.integer  "redmine_id"
+    t.datetime "created_at", :null => false
+    t.datetime "updated_at", :null => false
   end
 
 end

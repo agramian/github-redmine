@@ -1,5 +1,6 @@
 source "http://rubygems.org"
 
+gem 'rake'
 gem 'sinatra'
 gem 'pg'
 gem 'activerecord'
@@ -14,3 +15,5 @@ group :development, :test do
   gem 'factory_girl'
   gem 'database_cleaner'  
 end
+
+ruby '2.2.2'
