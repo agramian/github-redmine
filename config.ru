@@ -4,6 +4,7 @@
 require './app'
 require 'dotenv'
 Dotenv.load
+require './config/environments'
 
 configure :production do
   set :bind, '0.0.0.0'

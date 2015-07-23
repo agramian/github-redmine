@@ -113,7 +113,7 @@ Ex:
 
 ### Production
 Run bundle and bootstrap commands from above with `RACK_ENV=production`.  
-Run `rackup RACK_ENV=production`.
+Run `RACK_ENV=production rackup`.  
 
 ### Technology
 

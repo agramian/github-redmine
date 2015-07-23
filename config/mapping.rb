@@ -9,8 +9,8 @@ class Mapping
   def project
     {
       'Guidebook Builder' => {
-        'owner' => 'Guidebook',
-        'project' => 'g3qa'
+        'owner' => 'abtin',
+        'project' => 'github-redmine-issues-test'
       }
     }
   end
