@@ -15,7 +15,7 @@ end
 class RequestHelper
   
   def initialize
-    @@valid_request_types = ['GET', 'POST']
+    @@valid_request_types = ['GET', 'POST', 'PUT', 'DELETE']
   end
 
   def request(type, url, return_raw=false, valid_response_codes=[200, 201], **options)
@@ -27,6 +27,10 @@ class RequestHelper
       response = HTTParty.get(url, :query => query, :headers => headers)
     when 'POST'
       response = HTTParty.post(url, :query => query, :headers => headers, :body => body)
+    when 'PUT'
+      response = HTTParty.put(url, :query => query, :headers => headers, :body => body)
+    when 'DELETE'
+      response = HTTParty.delete(url, :query => query, :headers => headers)
     else
       raise InvalidRequestError, 'Invalid request type "%s". Valid types are "%s"' %[type, @@valid_request_types.join(',')] 
     end

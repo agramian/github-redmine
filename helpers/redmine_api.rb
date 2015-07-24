@@ -24,6 +24,15 @@ class RedmineApi
     return response
   end
 
+  def get_issue(id)
+    query = {
+      'id' => id,
+      'include' => 'attachments,journals'
+      }.delete_if { |key, value| value.to_s.strip == '' }
+    response = @@request_helper.request('GET', ENV['REDMINE_BASE_URL'] + 'issues/' + id.to_s + '.json', :query => query.merge!(@@key_param))
+    return response
+  end
+
   def create_issue(project_id,
                    subject,
                    description,
@@ -44,6 +53,39 @@ class RedmineApi
                                         :query => @@key_param,
                                         :body => {'issue' => body})
     return response
-  end  
+  end
+
+  def update_issue(id,
+                   subject,
+                   description,
+                   project_id=nil,
+                   status_id=nil,
+                   priority_id=nil,
+                   assigned_to_id=nil,
+                   attachments=nil,
+                   notes=nil)
+    body = {
+      'project_id' => project_id,
+      'subject' => subject,
+      'description' => description,
+      'status_id' => status_id,
+      'priority_id' => priority_id,
+      'assigned_to_id' => assigned_to_id
+      }.delete_if { |key, value| value.to_s.strip == '' }
+    response = @@request_helper.request('PUT',
+                                        ENV['REDMINE_BASE_URL'] + 'issues/' + id.to_s + '.json',
+                                        return_raw=true,
+                                        :query => @@key_param,
+                                        :body => {'issue' => body})
+    return response
+  end
+
+  def delete_issue(id)
+    response = @@request_helper.request('DELETE',
+                                        ENV['REDMINE_BASE_URL'] + 'issues/' + id.to_s + '.json',
+                                        return_raw=true,
+                                        :query => @@key_param)
+    return response
+  end
   
 end
