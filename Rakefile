@@ -5,7 +5,7 @@ require 'sinatra/activerecord/rake'
 require 'rake/testtask'
 
 task :sync_redmine_to_github do
-  ruby "./setup/sync_redmine_to_github.rb"
+  ruby './setup/sync_redmine_to_github.rb'
 end
 
 Rake::TestTask.new do |t|

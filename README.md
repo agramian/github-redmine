@@ -115,6 +115,16 @@ Ex:
 Run bundle and bootstrap commands from above with `RACK_ENV=production`.  
 Run `RACK_ENV=production rackup`.  
 
+Other
+-----
+In case API responses change in the future, to generate test JSON data from the webhooks place the following code block in the app.rb `post /github` and `post /redmine` methods.
+Then create/update/close issues etc. from Redmine and GitHub and save the files appropriately.
+```
+File.open(File.join(File.dirname(__FILE__), 'test/json_responses/redmine_test.json'),"w") do |f|
+  f.write(request.body.read)
+end
+```
+
 ### Technology
 
 - Ruby 2.2
