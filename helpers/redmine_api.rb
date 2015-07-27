@@ -7,6 +7,14 @@ class RedmineApi
     @@key_param = {'key' => ENV['REDMINE_API_KEY']}
   end
     
+  def get_users(name=nil)
+    query = {
+      'name' => name
+      }.delete_if { |key, value| value.to_s.strip == '' }
+    response = @@request_helper.request('GET', ENV['REDMINE_BASE_URL'] + 'users.json', :query => query.merge!(@@key_param))
+    return response
+  end
+
   def get_projects()
     response = @@request_helper.request('GET',
                                         ENV['REDMINE_BASE_URL'] + 'projects.json',
@@ -14,10 +22,10 @@ class RedmineApi
     return response['projects']
   end
 
-  def get_issues(project_id=nil, subprojecdt_id=nil, tracker_id=nil)
+  def get_issues(project_id=nil, subproject_id=nil, tracker_id=nil)
     query = {
       'project_id' => project_id,
-      'subproject_id' => subprojecdt_id,
+      'subproject_id' => subproject_id,
       'tracker_id' => tracker_id
       }.delete_if { |key, value| value.to_s.strip == '' }
     response = @@request_helper.request('GET', ENV['REDMINE_BASE_URL'] + 'issues.json', :query => query.merge!(@@key_param))
@@ -33,20 +41,34 @@ class RedmineApi
     return response
   end
 
+=begin
+  def upload_attachment()
+    headers = {
+      'Content-Type' => 'application/octet-stream'
+    }
+    query = {
+      'id' => id,
+      'include' => 'attachments,journals'
+      }.delete_if { |key, value| value.to_s.strip == '' }
+    response = @@request_helper.request('GET',
+                                        ENV['REDMINE_BASE_URL'] + 'uploads.json',
+                                        :headers => headers,
+                                        :query => query.merge!(@@key_param))
+    return response
+  end
+=end
+
   def create_issue(project_id,
                    subject,
                    description,
-                   status_id=nil,
-                   priority_id=nil,
-                   assigned_to_id=nil,
-                   attachments=nil)
+                   **options)
     body = {
       'project_id' => project_id,
       'subject' => subject,
       'description' => description,
-      'status_id' => status_id,
-      'priority_id' => priority_id,
-      'assigned_to_id' => assigned_to_id
+      'status_id' => options[:status_id] || nil,
+      'priority_id' => options[:priority_id] || nil,
+      'assigned_to_id' => options[:assigned_to_id] || nil
       }.delete_if { |key, value| value.to_s.strip == '' }
     response = @@request_helper.request('POST',
                                         ENV['REDMINE_BASE_URL'] + 'issues.json',
@@ -58,19 +80,15 @@ class RedmineApi
   def update_issue(id,
                    subject,
                    description,
-                   project_id=nil,
-                   status_id=nil,
-                   priority_id=nil,
-                   assigned_to_id=nil,
-                   attachments=nil,
-                   notes=nil)
+                   **options)
     body = {
-      'project_id' => project_id,
       'subject' => subject,
       'description' => description,
-      'status_id' => status_id,
-      'priority_id' => priority_id,
-      'assigned_to_id' => assigned_to_id
+      'project_id' => options[:project_id] || nil,
+      'status_id' => options[:status_id] || nil,
+      'priority_id' => options[:priority_id] || nil,
+      'assigned_to_id' => options[:assigned_to_id] || nil,
+      'notes' => options[:notes] || nil
       }.delete_if { |key, value| value.to_s.strip == '' }
     response = @@request_helper.request('PUT',
                                         ENV['REDMINE_BASE_URL'] + 'issues/' + id.to_s + '.json',
