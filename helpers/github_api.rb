@@ -25,4 +25,10 @@ class GitHubApi
       end
     end
   end
+
+  def get_attachement_content(url)
+    response = @@request_helper.request('GET', url, return_raw=true, :headers => @@headers)
+    return response.body
+  end
+
 end

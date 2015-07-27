@@ -41,27 +41,33 @@ class RedmineApi
     return response
   end
 
-=begin
-  def upload_attachment()
+  def upload_attachment(content)
     headers = {
       'Content-Type' => 'application/octet-stream'
     }
-    query = {
-      'id' => id,
-      'include' => 'attachments,journals'
-      }.delete_if { |key, value| value.to_s.strip == '' }
-    response = @@request_helper.request('GET',
+    response = @@request_helper.request('POST',
                                         ENV['REDMINE_BASE_URL'] + 'uploads.json',
                                         :headers => headers,
-                                        :query => query.merge!(@@key_param))
+                                        :query => @@key_param,
+                                        :body => content)
     return response
   end
-=end
 
   def create_issue(project_id,
                    subject,
                    description,
                    **options)
+    """
+    # TODO
+    # take passed in attachments and change to format required for RedmineApi
+    # 'uploads': [
+      {'token': '7167.ed1ccdb093229ca1bd0b043618d88743', 'filename': 'image1.png', 'content_type': 'image/png'},
+      {'token': '7168.d595398bbb104ed3bba0eed666785cc6', 'filename': 'image2.png', 'content_type': 'image/png'}
+    ]
+    if options[:attachments]
+      uploads
+    end
+    """
     body = {
       'project_id' => project_id,
       'subject' => subject,
