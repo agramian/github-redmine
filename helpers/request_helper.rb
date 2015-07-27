@@ -15,7 +15,7 @@ end
 class RequestHelper
   
   def initialize
-    @@valid_request_types = ['GET', 'POST', 'PUT', 'DELETE']
+    @@valid_request_types = ['GET', 'POST', 'PUT', 'PATCH', 'DELETE']
   end
 
   def request(type, url, return_raw=false, valid_response_codes=[200, 201], **options)
@@ -29,6 +29,8 @@ class RequestHelper
       response = HTTParty.post(url, :query => query, :headers => headers, :body => body)
     when 'PUT'
       response = HTTParty.put(url, :query => query, :headers => headers, :body => body)
+    when 'PATCH'
+      response = HTTParty.patch(url, :query => query, :headers => headers, :body => body)
     when 'DELETE'
       response = HTTParty.delete(url, :query => query, :headers => headers)
     else

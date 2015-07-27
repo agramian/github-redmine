@@ -7,12 +7,15 @@ class RedmineApi
     @@key_param = {'key' => ENV['REDMINE_API_KEY']}
   end
     
+  def get_user(id)
+    return @@request_helper.request('GET', ENV['REDMINE_BASE_URL'] + 'users/' + id.to_s + '.json', :query => @@key_param)
+  end
+
   def get_users(name=nil)
     query = {
       'name' => name
       }.delete_if { |key, value| value.to_s.strip == '' }
-    response = @@request_helper.request('GET', ENV['REDMINE_BASE_URL'] + 'users.json', :query => query.merge!(@@key_param))
-    return response
+    return @@request_helper.request('GET', ENV['REDMINE_BASE_URL'] + 'users.json', :query => query.merge!(@@key_param))
   end
 
   def get_projects()
@@ -28,8 +31,7 @@ class RedmineApi
       'subproject_id' => subproject_id,
       'tracker_id' => tracker_id
       }.delete_if { |key, value| value.to_s.strip == '' }
-    response = @@request_helper.request('GET', ENV['REDMINE_BASE_URL'] + 'issues.json', :query => query.merge!(@@key_param))
-    return response
+    return @@request_helper.request('GET', ENV['REDMINE_BASE_URL'] + 'issues.json', :query => query.merge!(@@key_param))
   end
 
   def get_issue(id)
@@ -37,20 +39,18 @@ class RedmineApi
       'id' => id,
       'include' => 'attachments,journals'
       }.delete_if { |key, value| value.to_s.strip == '' }
-    response = @@request_helper.request('GET', ENV['REDMINE_BASE_URL'] + 'issues/' + id.to_s + '.json', :query => query.merge!(@@key_param))
-    return response
+    return @@request_helper.request('GET', ENV['REDMINE_BASE_URL'] + 'issues/' + id.to_s + '.json', :query => query.merge!(@@key_param))
   end
 
   def upload_attachment(content)
     headers = {
       'Content-Type' => 'application/octet-stream'
     }
-    response = @@request_helper.request('POST',
-                                        ENV['REDMINE_BASE_URL'] + 'uploads.json',
-                                        :headers => headers,
-                                        :query => @@key_param,
-                                        :body => content)
-    return response
+    return @@request_helper.request('POST',
+                                    ENV['REDMINE_BASE_URL'] + 'uploads.json',
+                                    :headers => headers,
+                                    :query => @@key_param,
+                                    :body => content)
   end
 
   def create_issue(project_id,
@@ -76,11 +76,10 @@ class RedmineApi
       'priority_id' => options[:priority_id] || nil,
       'assigned_to_id' => options[:assigned_to_id] || nil
       }.delete_if { |key, value| value.to_s.strip == '' }
-    response = @@request_helper.request('POST',
-                                        ENV['REDMINE_BASE_URL'] + 'issues.json',
-                                        :query => @@key_param,
-                                        :body => {'issue' => body})
-    return response
+    return @@request_helper.request('POST',
+                                    ENV['REDMINE_BASE_URL'] + 'issues.json',
+                                    :query => @@key_param,
+                                    :body => {'issue' => body})
   end
 
   def update_issue(id,
@@ -96,20 +95,18 @@ class RedmineApi
       'assigned_to_id' => options[:assigned_to_id] || nil,
       'notes' => options[:notes] || nil
       }.delete_if { |key, value| value.to_s.strip == '' }
-    response = @@request_helper.request('PUT',
-                                        ENV['REDMINE_BASE_URL'] + 'issues/' + id.to_s + '.json',
-                                        return_raw=true,
-                                        :query => @@key_param,
-                                        :body => {'issue' => body})
-    return response
+    return @@request_helper.request('PUT',
+                                    ENV['REDMINE_BASE_URL'] + 'issues/' + id.to_s + '.json',
+                                    return_raw=true,
+                                    :query => @@key_param,
+                                    :body => {'issue' => body})
   end
 
   def delete_issue(id)
-    response = @@request_helper.request('DELETE',
-                                        ENV['REDMINE_BASE_URL'] + 'issues/' + id.to_s + '.json',
-                                        return_raw=true,
-                                        :query => @@key_param)
-    return response
+    return @@request_helper.request('DELETE',
+                                    ENV['REDMINE_BASE_URL'] + 'issues/' + id.to_s + '.json',
+                                    return_raw=true,
+                                    :query => @@key_param)
   end
   
 end
