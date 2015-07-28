@@ -87,6 +87,8 @@ bundle
 bundle install --without test development`
 # create and migrate database
 rake db:migrate:reset
+# generate the schema and load the seed data
+rake db:setup
 ```
 
 ###### (Optional) Sync Redmine with GitHub

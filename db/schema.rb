@@ -11,13 +11,38 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20141020110537) do
+ActiveRecord::Schema.define(:version => 20150728054942) do
+
+  create_table "issue_types", :force => true do |t|
+    t.string  "github_issue_type_name"
+    t.integer "redmine_tracker_id"
+    t.string  "redmine_tracker_name"
+  end
 
   create_table "issues", :force => true do |t|
     t.integer  "github_id"
     t.integer  "redmine_id"
     t.datetime "created_at", :null => false
     t.datetime "updated_at", :null => false
+  end
+
+  create_table "priorities", :force => true do |t|
+    t.string  "github_priority_name"
+    t.integer "redmine_priority_id"
+    t.string  "redmine_priority_name"
+  end
+
+  create_table "projects", :force => true do |t|
+    t.string  "github_repo_name"
+    t.string  "github_repo_owner"
+    t.integer "redmine_project_id"
+    t.string  "redmine_project_name"
+  end
+
+  create_table "statuses", :force => true do |t|
+    t.string  "github_status_name"
+    t.integer "redmine_status_id"
+    t.string  "redmine_status_name"
   end
 
 end

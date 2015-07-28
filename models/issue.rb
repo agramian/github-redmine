@@ -25,8 +25,8 @@ class Issue < ActiveRecord::Base
       body: {
         title: redmine.title,
         body: redmine.formated_description,
-        state:  @@mapping.status[redmine.status],
-        labels: [@@mapping.default_label, redmine.priority].compact,
+        state:  @@mapping2.status[redmine.status],
+        labels: [@@mapping2.default_label, redmine.priority].compact,
         assignee: redmine.assignee
       }.to_json
     })
@@ -49,8 +49,8 @@ class Issue < ActiveRecord::Base
     {
       body: {
         issue: {
-          status_id: @@mapping.status.key(github.status),
-          assigned_to_id: @@mapping.assignee.key(github.assignee),
+          status_id: @@mapping2.status.key(github.status),
+          assigned_to_id: @@mapping2.assignee.key(github.assignee),
         }
       }
     }

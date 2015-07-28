@@ -1,12 +1,11 @@
 require 'sinatra'
 require 'httparty'
 require 'sinatra/activerecord'
-require './config/mapping'
+Dir[File.dirname(__FILE__) + '/models/*.rb'].each {|file| require file }
+
 require './models/redmine_issue'
 require './models/github_issue'
 require './models/issue'
-
-@@mapping = Mapping.new
 
 get '/' do
 	content_type :json
