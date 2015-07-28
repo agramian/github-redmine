@@ -18,10 +18,24 @@ class RedmineApi
     return @@request_helper.request('GET', ENV['REDMINE_BASE_URL'] + 'users.json', :query => query.merge!(@@key_param))
   end
 
+  def get_statuses()
+    return @@request_helper.request('GET', ENV['REDMINE_BASE_URL'] + 'issue_statuses.json', :query => @@key_param)
+  end
+
+  def get_trackers()
+    return @@request_helper.request('GET', ENV['REDMINE_BASE_URL'] + 'trackers.json', :query => @@key_param)
+  end
+
+  def get_priorities()
+    return @@request_helper.request('GET', ENV['REDMINE_BASE_URL'] + 'enumerations/issue_priorities.json', :query => @@key_param)
+  end
+
+  def get_categories(project_id)
+    return @@request_helper.request('GET', ENV['REDMINE_BASE_URL'] + 'projects/' + project_id.to_s + '/issue_categories.json', :query => @@key_param)
+  end
+
   def get_projects()
-    response = @@request_helper.request('GET',
-                                        ENV['REDMINE_BASE_URL'] + 'projects.json',
-                                        :query => @@key_param)
+    response = @@request_helper.request('GET', ENV['REDMINE_BASE_URL'] + 'projects.json', :query => @@key_param)
     return response['projects']
   end
 
