@@ -43,7 +43,7 @@ class RedmineApi
     query = {
       'project_id' => project_id,
       'subproject_id' => subproject_id,
-      'tracker_id' => tracker_id
+      'tracker_id' => tracker_id,
       }.delete_if { |key, value| value.to_s.strip == '' }
     return @@request_helper.request('GET', ENV['REDMINE_BASE_URL'] + 'issues.json', :query => query.merge!(@@key_param))
   end
@@ -97,13 +97,10 @@ class RedmineApi
                                     :body => {'issue' => body})
   end
 
-  def update_issue(id,
-                   subject,
-                   description,
-                   **options)
+  def update_issue(id, **options)
     body = {
-      'subject' => subject,
-      'description' => description,
+      'subject' => options[:subject] || nil,
+      'description' => options[:description] || nil,
       'project_id' => options[:project_id] || nil,
       'status_id' => options[:status_id] || nil,
       'priority_id' => options[:priority_id] || nil,

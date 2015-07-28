@@ -79,21 +79,26 @@ projects.each do |p|
       }.delete_if { |key, value| value.to_s.strip == '' }
     # if issue exists in database just update, otherwise create
     db_issue = Issue.where(github_id: issue['number'], github_project_name: p.github_repo_name).first
+    action = nil
     if db_issue.present?
-      redmine_api.update_issue(project_id=p.redmine_project_id,
-                               subject=issue['title'],
-                               description=issue['body'],
-                               body)
-      Issue.update(redmine_id: new_redmine_issue['issue']['id'], github_id: issue['number'], github_project_name: p.github_repo_name)
-      puts 'Successfully updated GitHub issue number %s/Redmine issue with id %s!' %[issue['number'].to_s, new_redmine_issue['issue']['id'].to_s]
+      update_body = {
+        :project_id => p.redmine_project_id,
+        :subject => issue['title'],
+        :description => issue['body'],
+      }
+      redmine_api.update_issue(id=db_issue.redmine_id, body.merge!(update_body))
+      Issue.update(db_issue.id, redmine_id: db_issue.redmine_id, github_id: db_issue.github_id, github_project_name: db_issue.github_project_name)
+      action = 'updated'
     else
       new_redmine_issue = redmine_api.create_issue(project_id=p.redmine_project_id,
                                                    subject=issue['title'],
                                                    description=issue['body'],
                                                    body)
-      Issue.create(redmine_id: new_redmine_issue['issue']['id'], github_id: issue['number'], github_project_name: p.github_repo_name)
-      puts 'Successfully created GitHub issue number %s in Redmine as issue with id %s!' %[issue['number'].to_s, new_redmine_issue['issue']['id'].to_s]
+      db_issue = Issue.create(redmine_id: new_redmine_issue['issue']['id'], github_id: issue['number'], github_project_name: p.github_repo_name)
+      action = 'created'
     end
+    puts 'Successfully %s GitHub issue number %s in the "%s" repository/Redmine issue with id %s in the "%s" project!' \
+         %[action, db_issue.github_id.to_s, db_issue.github_project_name, db_issue.redmine_id.to_s, p.redmine_project_name]
   end
   puts 'Successfully synced all issues from the "%s" GitHub repository with the "%s" Redmine project!' %[p.github_repo_name, p.redmine_project_name]                           
 end
