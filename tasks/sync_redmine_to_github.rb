@@ -1,8 +1,7 @@
 require 'sinatra/activerecord'
 require 'optparse'
-require_relative '../models/issue'
-require_relative '../helpers/github_api'
-require_relative '../helpers/redmine_api'
+Dir[File.dirname(__FILE__) + '/../models/*.rb'].each {|file| require file }
+Dir[File.dirname(__FILE__) + '/../helpers/*.rb'].each {|file| require file }
 
 # parse command line args
 options = {}
@@ -15,46 +14,88 @@ end.parse!
 # initialize classes
 github_api = GitHubApi.new
 redmine_api = RedmineApi.new
-puts redmine_api.get_trackers()
-exit
-=begin
+# get all projects either via command line or activerecord
+projects = options[:projects] ? options[:projects] : Project.find(:all)
+# get all priorities
+priorities = Priority.find(:all)
+# get all issue statuses
+issue_statuses = Status.find(:all)
+# get all issue types
+issue_types = IssueType.find(:all)
 # for each project
-# create a redmine issue for each github issue 
-mapping.project.each do |redmine_project, github_project|
-  # continue if projects argument passed and not in projects
-  if options[:projects] and !options[:projects].include? redmine_project
-    next
-  end
-  # find the redmine project id
-  projects = redmine_api.get_projects()
-  target_project = nil
-  projects.each do |p|
-    if p['name'] == redmine_project
-      target_project = p
+# create a redmine issue for each github issue
+projects.each do |p|
+  # if arguments passed, handle differently
+  if p.class == String
+    name = p
+    p = Project.where(redmine_project_name: p).first
+    if !p
+      puts 'Unabled to find project "%s"' %[name]
+      exit 1
     end
   end
   # get all github issues for the repository
-  issues = github_api.get_issues(github_project['owner'], github_project['project'])
+  issues = github_api.get_issues(p.github_repo_owner, p.github_repo_name)
   # create redmine issues
   issues.each do |issue|
-    user = redmine_api.get_users(issue['assignee']['login'])
-    labels = issue['labels']
+    # get assignee if any
+    user = redmine_api.get_users(issue['assignee'] ? issue['assignee']['login'] : ENV['DEFAULT_ASSIGNEE'])
+    # get issue status
+    status_id = nil
+    issue_statuses.each do |status|
+      if issue['labels'].detect {|l| l['name'] == status.github_status_name }
+        status_id = status.redmine_status_id
+        break
+      end
+    end
+    if status_id.nil?
+      status = issue_statuses.detect {|s| s.github_status_name == issue['state']}
+      if status
+        status_id = status.redmine_status_id
+      end
+    end
+    # get priority
+    priority_id = nil
+    priorities.each do |priority|
+      if issue['labels'].detect {|l| l['name'] == priority.github_priority_name }
+        priority_id = priority.redmine_priority_id
+        break
+      end
+    end
+    # get tracker
+    tracker_id = nil
+    issue_types.each do |issue_type|
+      if issue['labels'].detect {|l| l['name'] == issue_type.github_issue_type_name }
+        tracker_id = issue_type.redmine_tracker_id
+        break
+      end
+    end   
+    # construct optional post data
     body = {
-          'project_id' => target_project['id'],
-          'subject' => issue['title'],
-          'description' => issue['body'],
-          'status_id' => options[:status_id] || nil,
-          'priority_id' => options[:priority_id] || nil,
-          'assigned_to_id' => user['total_count'] ? user['users'][0]['id'] : nil
-          }.delete_if { |key, value| value.to_s.strip == '' }
-    puts body
-    break
-    redmine_api.create_issue(project_id=target_project['id'],
-                             subject='test create issue via api',
-                             description='qwerqwerqwer')
-    break
+      :status_id => status_id,
+      :priority_id => priority_id,
+      :tracker_id => tracker_id,
+      :assigned_to_id => user['total_count'] ? user['users'][0]['id'] : nil
+      }.delete_if { |key, value| value.to_s.strip == '' }
+    # if issue exists in database just update, otherwise create
+    db_issue = Issue.where(github_id: issue['number'], github_project_name: p.github_repo_name).first
+    if db_issue.present?
+      redmine_api.update_issue(project_id=p.redmine_project_id,
+                               subject=issue['title'],
+                               description=issue['body'],
+                               body)
+      Issue.update(redmine_id: new_redmine_issue['issue']['id'], github_id: issue['number'], github_project_name: p.github_repo_name)
+      puts 'Successfully updated GitHub issue number %s/Redmine issue with id %s!' %[issue['number'].to_s, new_redmine_issue['issue']['id'].to_s]
+    else
+      new_redmine_issue = redmine_api.create_issue(project_id=p.redmine_project_id,
+                                                   subject=issue['title'],
+                                                   description=issue['body'],
+                                                   body)
+      Issue.create(redmine_id: new_redmine_issue['issue']['id'], github_id: issue['number'], github_project_name: p.github_repo_name)
+      puts 'Successfully created GitHub issue number %s in Redmine as issue with id %s!' %[issue['number'].to_s, new_redmine_issue['issue']['id'].to_s]
+    end
   end
-  puts 'Successfully synced all issues from the "%s" GitHub repository with the "" Redmine project!' %[github_project, redmine_project]                           
+  puts 'Successfully synced all issues from the "%s" GitHub repository with the "%s" Redmine project!' %[p.github_repo_name, p.redmine_project_name]                           
 end
 
 exit 0
@@ -107,6 +148,5 @@ puts content
 
 
 print redmine_api.get_users('abtin')
-exit
+exit 0
 =end
-

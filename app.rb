@@ -3,10 +3,6 @@ require 'httparty'
 require 'sinatra/activerecord'
 Dir[File.dirname(__FILE__) + '/models/*.rb'].each {|file| require file }
 
-require './models/redmine_issue'
-require './models/github_issue'
-require './models/issue'
-
 get '/' do
 	content_type :json
 	Issue.order("ID DESC").all.to_json

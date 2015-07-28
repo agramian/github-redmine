@@ -35,7 +35,7 @@ all_issues['issues'].each do |issue|
   redmine_api.delete_issue(id=issue['id'])
   # delete in database
   redmine_issue = Issue.where(redmine_id: issue['id']).first
-  if redmine_issue
+  if redmine_issue.present?
     redmine_issue.destroy()
   end
 end

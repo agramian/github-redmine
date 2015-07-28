@@ -88,6 +88,7 @@ class RedmineApi
       'description' => description,
       'status_id' => options[:status_id] || nil,
       'priority_id' => options[:priority_id] || nil,
+      'tracker_id' => options[:tracker_id] || nil,
       'assigned_to_id' => options[:assigned_to_id] || nil
       }.delete_if { |key, value| value.to_s.strip == '' }
     return @@request_helper.request('POST',
@@ -106,6 +107,7 @@ class RedmineApi
       'project_id' => options[:project_id] || nil,
       'status_id' => options[:status_id] || nil,
       'priority_id' => options[:priority_id] || nil,
+      'tracker_id' => options[:tracker_id] || nil,
       'assigned_to_id' => options[:assigned_to_id] || nil,
       'notes' => options[:notes] || nil
       }.delete_if { |key, value| value.to_s.strip == '' }

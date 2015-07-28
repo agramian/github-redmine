@@ -60,10 +60,12 @@ REDMINE_API_KEY='xxxxx'
 
 SLACK_BASE_URL='https://example.slack.com/api/'
 SLACK_AUTH_TOKEN='xxxxx'
+
+DEFAULT_ASSIGNEE='abtin'
 ```
 
 #### Field mapping
-Modify the `config\mapping.rb` file to map Redmin and GitHub fields.
+Modify the `db\seeds.rb` file to map Redmine and GitHub fields.
 
 #### Installing dependencies
 
@@ -91,10 +93,18 @@ rake db:migrate:reset
 rake db:setup
 ```
 
-###### (Optional) Sync Redmine with GitHub
-A rake task is provide to sync/create all GitHub issues inside the Redmine project.
+###### (Optional) Delete all Redmine Issues
+A rake task is provided to delete all existing issues from one or more Redmine projects.
+The rake task takes a semicolon separated list of Redmine project names or 'ALL'.
 ```
-rake sync_redmine_to_github
+rake delete_all_redmine_issues['ALL']
+```
+
+###### (Optional) Sync Redmine with GitHub
+A rake task is provided to sync/create all GitHub issues with the associated Redmine project(s).
+The rake task takes a semicolon separated list of Redmine project names or 'ALL'.
+```
+rake sync_redmine_to_github['PROJECT1;PROJECT2']
 ```
 
 Running
