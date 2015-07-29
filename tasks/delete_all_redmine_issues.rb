@@ -32,7 +32,7 @@ end
 # get all issues for project
 all_issues = redmine_api.get_issues(project_id=target_project['id'])
 # delete each issue
-all_issues['issues'].each do |issue|
+all_issues.each do |issue|
   # delete in redmine
   redmine_api.delete_issue(id=issue['id'])
   # delete in database
@@ -40,6 +40,7 @@ all_issues['issues'].each do |issue|
   if redmine_issue.present?
     redmine_issue.destroy()
   end
+  puts 'deleted issue %s' %[issue['id']]
 end
 # delete all comments associated with the project
 Comment.destroy_all(github_repo_name: Project.where(redmine_project_id: target_project['id']).first.github_repo_name)

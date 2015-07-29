@@ -39,14 +39,27 @@ class RedmineApi
     return response['projects']
   end
 
-  def get_issues(project_id=nil, subproject_id=nil, tracker_id=nil)
-    query = {
-      'project_id' => project_id,
-      'subproject_id' => subproject_id,
-      'tracker_id' => tracker_id,
-      'status_id' => '*'
-      }.delete_if { |key, value| value.to_s.strip == '' }
-    return @@request_helper.request('GET', ENV['REDMINE_BASE_URL'] + 'issues.json', :query => query.merge!(@@key_param))
+  def get_issues(project_id=nil, subproject_id=nil, tracker_id=nil, status_id='*')
+    $offset = 0;
+    $limit = 100;
+    $issues = [];
+    loop do
+      query = {
+        'project_id' => project_id,
+        'subproject_id' => subproject_id,
+        'tracker_id' => tracker_id,
+        'status_id' => status_id,
+        'limit' => $limit,
+        'offset' => $offset.to_s
+        }.delete_if { |key, value| value.to_s.strip == '' }
+      response = @@request_helper.request('GET', ENV['REDMINE_BASE_URL'] + 'issues.json', :query => query.merge!(@@key_param))
+      if response['issues'].any?;
+        $issues += response['issues']
+        $offset += $limit;
+      else
+        return $issues
+      end
+    end
   end
 
   def get_issue(id)
@@ -90,11 +103,19 @@ class RedmineApi
       'status_id' => options[:status_id] || nil,
       'priority_id' => options[:priority_id] || nil,
       'tracker_id' => options[:tracker_id] || nil,
-      'assigned_to_id' => options[:assigned_to_id] || nil
+      'assigned_to_id' => options[:assigned_to_id] || nil,
+      'author_id' => options[:author_id] || nil
       }.delete_if { |key, value| value.to_s.strip == '' }
+    headers = nil
+    if options[:author_name] && get_users(options[:author_name])['total_count'] > 0
+      headers = {
+        'X-Redmine-Switch-User' => options[:author_name]
+      }
+    end
     return @@request_helper.request('POST',
                                     ENV['REDMINE_BASE_URL'] + 'issues.json',
                                     :query => @@key_param,
+                                    :headers => headers,
                                     :body => {'issue' => body})
   end
 
@@ -107,12 +128,20 @@ class RedmineApi
       'priority_id' => options[:priority_id] || nil,
       'tracker_id' => options[:tracker_id] || nil,
       'assigned_to_id' => options[:assigned_to_id] || nil,
+      'author_id' => options[:author_id] || nil,
       'notes' => options[:notes] || nil
       }.delete_if { |key, value| value.to_s.strip == '' }
+    headers = nil
+    if options[:author_name] && get_users(options[:author_name])['total_count'] > 0
+      headers = {
+        'X-Redmine-Switch-User' => options[:author_name]
+      }
+    end
     return @@request_helper.request('PUT',
                                     ENV['REDMINE_BASE_URL'] + 'issues/' + id.to_s + '.json',
                                     return_raw=true,
                                     :query => @@key_param,
+                                    :headers => headers,
                                     :body => {'issue' => body})
   end
 

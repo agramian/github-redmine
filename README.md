@@ -62,6 +62,7 @@ SLACK_BASE_URL='https://example.slack.com/api/'
 SLACK_AUTH_TOKEN='xxxxx'
 
 DEFAULT_ASSIGNEE='abtin'
+DEFAULT_AUTHOR='abtin'
 ```
 
 #### Field mapping
