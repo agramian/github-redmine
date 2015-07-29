@@ -17,11 +17,17 @@ task :sync_redmine_to_github, [:projects]  do |t, args|
   end
 end
 
-task :delete_all_redmine_issues, [:project]  do |t, args|
-  if !args[:project]
-    raise Exception, 'Project arg is required. Usage: "rake delete_all_redmine_issues[\'PROJECT\']"'
+task :delete_all_redmine_issues, [:projects]  do |t, args|
+  if !args[:projects]
+    raise Exception, 'Projects arg is required. Takes a comma-separated list of Redmine project names or "ALL". ' \
+                     'Usage: "rake delete_all_redmine_issues[\'PROJECT1;PROJECT2\']" OR "rake delete_all_redmine_issues[\'ALL\']"'
   end
-  ruby './tasks/delete_all_redmine_issues.rb -p "%s"' %[args[:project]]
+  projects_split = args[:projects].split(/;/).map(&:strip)
+  if projects_split.count == 1 && projects_split[0].upcase == 'ALL'
+    ruby './tasks/delete_all_redmine_issues.rb'
+  else
+    ruby './tasks/delete_all_redmine_issues.rb -p "%s"' %[projects_split.join(',')]
+  end
 end
 
 Rake::TestTask.new do |t|

@@ -11,7 +11,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20150728213400) do
+ActiveRecord::Schema.define(:version => 20150729180909) do
 
   create_table "comments", :force => true do |t|
     t.integer  "redmine_journal_id"
@@ -33,6 +33,7 @@ ActiveRecord::Schema.define(:version => 20150728213400) do
     t.datetime "created_at",       :null => false
     t.datetime "updated_at",       :null => false
     t.string   "github_repo_name"
+    t.integer  "status_id"
   end
 
   create_table "priorities", :force => true do |t|
