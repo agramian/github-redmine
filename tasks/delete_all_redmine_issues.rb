@@ -1,7 +1,7 @@
 require 'sinatra/activerecord'
 require 'optparse'
-Dir[File.dirname(__FILE__) + '/../models/*.rb'].each {|file| require file }
-Dir[File.dirname(__FILE__) + '/../helpers/*.rb'].each {|file| require file }
+Dir[File.dirname(__FILE__) + '/../models/*.rb'].each {|file| require file}
+Dir[File.dirname(__FILE__) + '/../helpers/*.rb'].each {|file| require file}
 
 # parse command line args
 options = {}

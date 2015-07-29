@@ -1,7 +1,8 @@
 require 'sinatra'
 require 'httparty'
 require 'sinatra/activerecord'
-Dir[File.dirname(__FILE__) + '/models/*.rb'].each {|file| require file }
+Dir[File.dirname(__FILE__) + '/models/*.rb'].each {|file| require file}
+Dir[File.dirname(__FILE__) + '/helpers/*.rb'].each {|file| require file}
 
 get '/' do
 	content_type :json
@@ -9,37 +10,26 @@ get '/' do
 end
 
 post '/redmine_hook' do
-	data = JSON.parse request.body.read
-	redmine = RedmineIssue.new(data)
-
+	data = JSON.parse(request.body.read)
 	issue = Issue.where(redmine_id: redmine.id).first
-
 	if issue.present?
-		## Update on Github if exist
-		issue.update_on_github(redmine)
+		# update
 	else
-		## Only create Issue on Github when status is validated
-		if redmine.open?
-			issue = Issue.create(redmine_id: redmine.id)
-			issue.create_on_github(redmine)
-		end
+		# create if non new state
 	end
-
-	"OK"
+	'OK'
 end
 
 post '/github_hook' do
 	data = JSON.parse(request.body.read)
-	github = GithubIssue.new(data)
-
 	issue = Issue.where(github_id: github.id).first
-
 	## Issue already created on Redmine
 	if issue.present?
-		issue.update_on_redmine(github)
+		# update
+  else
+    # create
 	end
-
-	"OK"
+	'OK'
 end
 
 after do
