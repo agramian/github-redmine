@@ -42,6 +42,7 @@ projects.each do |p|
     user = redmine_api.get_users(issue['assignee'] ? issue['assignee']['login'] : ENV['DEFAULT_ASSIGNEE'])
     # get issue status
     status_id = nil
+    # first look for labels indicating status
     issue_statuses.each do |status|
       if issue['labels'].detect {|l| l['name'] == status.github_status_name }
         status_id = status.redmine_status_id
@@ -49,9 +50,12 @@ projects.each do |p|
       end
     end
     if status_id.nil?
-      status = issue_statuses.detect {|s| s.github_status_name == issue['state']}
-      if status
-        status_id = status.redmine_status_id
+      # set to closed if state is closed
+      if issue['state'] == 'closed'
+        status_id = Status.where(github_status_name: 'closed').first.redmine_status_id
+      # set to in progress if there is an assignee
+      elsif issue['assignee']
+        status_id = Status.where(github_status_name: 'In Progress').first.redmine_status_id
       end
     end
     # get priority
@@ -75,7 +79,8 @@ projects.each do |p|
       :status_id => status_id,
       :priority_id => priority_id,
       :tracker_id => tracker_id,
-      :assigned_to_id => user['total_count'] ? user['users'][0]['id'] : nil
+      :assigned_to_id => user['total_count'] > 0 ? user['users'][0]['id'] : nil,
+      :author_name => issue['user']['login']
       }.delete_if { |key, value| value.to_s.strip == '' }
     # if issue exists in database just update, otherwise create
     db_issue = Issue.where(github_id: issue['number'], github_repo_name: p.github_repo_name).first
@@ -87,39 +92,51 @@ projects.each do |p|
         :description => issue['body'],
       }
       redmine_api.update_issue(id=db_issue.redmine_id, body.merge!(update_body))
-      Issue.update(db_issue.id, redmine_id: db_issue.redmine_id, github_id: db_issue.github_id, github_repo_name: db_issue.github_repo_name)
+      Issue.update(db_issue.id,
+                   redmine_id: db_issue.redmine_id,
+                   github_id: db_issue.github_id,
+                   github_repo_name: db_issue.github_repo_name,
+                   status_id: status_id)
       action = 'updated'
     else
       new_redmine_issue = redmine_api.create_issue(project_id=p.redmine_project_id,
                                                    subject=issue['title'],
                                                    description=issue['body'],
                                                    body)
-      db_issue = Issue.create(redmine_id: new_redmine_issue['issue']['id'], github_id: issue['number'], github_repo_name: p.github_repo_name)
+      db_issue = Issue.create(redmine_id: new_redmine_issue['issue']['id'],
+                              github_id: issue['number'],
+                              github_repo_name: p.github_repo_name,
+                              status_id: status_id)
       action = 'created'
     end
     puts 'Successfully %s GitHub issue number %s in the "%s" repository/Redmine issue with id %s in the "%s" project!' \
          %[action, db_issue.github_id.to_s, db_issue.github_repo_name, db_issue.redmine_id.to_s, p.redmine_project_name]
     # get all comments for the github issue for the repository if any
     if issue['comments'] > 0
-      comments = github_api.get_issues(p.github_repo_owner, p.github_repo_name)
-      action = nil
+      comments = github_api.get_comments(p.github_repo_owner, p.github_repo_name, db_issue.github_id)
       # create redmine notes for each github comment
       comments.each do |comment|
-        # if issue exists in database just update, otherwise create
+        # construct commend body
+        comment_body = {
+          :notes => comment['body'],
+          :author_name => comment['user']['login']
+        }
+        # if comment exists in database just update, otherwise create
         db_comment = Comment.where(github_comment_id: comment['id'], github_repo_name: p.github_repo_name).first
         action = nil
         if db_comment.present?
           # **** REDMINE REST API DOES NOT SUPPORT JOURNAL NOTE UPDATES
           # SO THIS IS KIND OF POINTLESS BUT HERE IN CASE THEY ADD IT LATER
           # FOR NOW SKIPPING THIS BLOCK
-          break
-          redmine_api.update_issue(id=db_issue.redmine_id, :notes => issue['body'])
+          action = 'skipped'
+          next
+          redmine_api.update_issue(id=db_issue.redmine_id, comment_body)
           Comment.update(db_comment.id, redmine_journal_id: db_comment.redmine_journal_id, github_comment_id: db_comment.github_comment_id, github_repo_name: db_comment.github_repo_name)
           action = 'updated'
         else
-          redmine_api.update_issue(id=db_issue.redmine_id, :notes => issue['body'])
+          redmine_api.update_issue(id=db_issue.redmine_id, comment_body)
           updated_issue = redmine_api.get_issue(id=db_issue.redmine_id)
-          new_journal = updated_issue['issue']['journals'].detect {|j| j['notes'] == issue['body']}
+          new_journal = updated_issue['issue']['journals'].detect {|j| j['notes'] == comment['body']}
           db_comment = Comment.create(redmine_journal_id: new_journal['id'], github_comment_id: comment['id'], github_repo_name: p.github_repo_name)
           action = 'created'
         end
@@ -130,56 +147,4 @@ projects.each do |p|
   end
   puts 'Successfully synced all issues from the "%s" GitHub repository with the "%s" Redmine project!' %[p.github_repo_name, p.redmine_project_name]                           
 end
-
 exit 0
-
-#Issue.create(redmine_id: 1, github_id: 2)
-=begin
-
-  all_issues = redmine_api.get_issues(project_id=target_project['id'])
-  #print all_issues
-  print redmine_api.get_issue(id=all_issues['issues'][0]['id'])
-  exit
-  #print redmine_api.delete_issue(id=all_issues['issues'][1]['id'])
-  print redmine_api.update_issue(id=all_issues['issues'][2]['id'],
-                                 subject='test change title via api 2',
-                                 description='test change description via api 2',
-                                 :notes => 'test comment via api, using **options parameter')
-  exit
-
-#print redmine_api.get_user(86)
-#exit
-
-
-
-exit
-
-#puts slack_api.post_message('@abtin', message='test')
-#exit
-
-url = 'https://github.guidebook.com/github-enterprise-assets/0000/0040/0000/2189/abe553ec-344f-11e5-8765-6d098227f291.gif'
-File.extname(url)
-
-content = github_api.get_attachement_content(url)
-
-#print redmine_api.upload_attachment(content)
-
-exit
-#File.extname(file)
-filepath = '/Users/agramian/Documents/Guidebook-repositories/github-redmine/test/data/attachments/test.png'
-File.open(filepath, 'wb') { |f|
-  f.write(content)
-}
-exit
-
-filepath = '/Users/agramian/Documents/Guidebook-repositories/github-redmine/test/data/attachments/guidebook-icon.png'
-content = nil
-File.open(filepath, 'rb') { |f|
-  content = f.read
-}
-puts content
-
-
-print redmine_api.get_users('abtin')
-exit 0
-=end
