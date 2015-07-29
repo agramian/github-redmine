@@ -15,14 +15,14 @@ class GitHubApi
                                     :headers => @@headers)
   end
 
-  def get_issues(owner, repository)
+  def get_issues(owner, repository, state='all')
     $page = 1;
     $issues = [];
     loop do
       response = @@request_helper.request('GET',
                                           ENV['GITHUB_BASE_URL'] + 'repos/%s/%s/issues' %[owner, repository],
                                           :headers => @@headers,
-                                          :query => {'page' => $page.to_s})
+                                          :query => {'page' => $page.to_s, 'state' => state})
       if response.any?;
         $issues += response
         $page += 1;

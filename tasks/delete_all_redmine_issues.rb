@@ -2,6 +2,8 @@ require 'sinatra/activerecord'
 require 'optparse'
 require_relative '../helpers/redmine_api'
 require_relative '../models/issue'
+require_relative '../models/project'
+require_relative '../models/comment'
 
 # parse command line args
 options = {}
@@ -39,5 +41,7 @@ all_issues['issues'].each do |issue|
     redmine_issue.destroy()
   end
 end
-puts 'Successfully deleted all issues for the "%s" project!' %[options[:project]]
+# delete all comments associated with the project
+Comment.destroy_all(github_repo_name: Project.where(redmine_project_id: target_project['id']).first.github_repo_name)
+puts 'Successfully deleted all issues and comments for the "%s" project!' %[options[:project]]
 exit 0

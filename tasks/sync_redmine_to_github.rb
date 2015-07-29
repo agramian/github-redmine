@@ -78,7 +78,7 @@ projects.each do |p|
       :assigned_to_id => user['total_count'] ? user['users'][0]['id'] : nil
       }.delete_if { |key, value| value.to_s.strip == '' }
     # if issue exists in database just update, otherwise create
-    db_issue = Issue.where(github_id: issue['number'], github_project_name: p.github_repo_name).first
+    db_issue = Issue.where(github_id: issue['number'], github_repo_name: p.github_repo_name).first
     action = nil
     if db_issue.present?
       update_body = {
@@ -87,18 +87,46 @@ projects.each do |p|
         :description => issue['body'],
       }
       redmine_api.update_issue(id=db_issue.redmine_id, body.merge!(update_body))
-      Issue.update(db_issue.id, redmine_id: db_issue.redmine_id, github_id: db_issue.github_id, github_project_name: db_issue.github_project_name)
+      Issue.update(db_issue.id, redmine_id: db_issue.redmine_id, github_id: db_issue.github_id, github_repo_name: db_issue.github_repo_name)
       action = 'updated'
     else
       new_redmine_issue = redmine_api.create_issue(project_id=p.redmine_project_id,
                                                    subject=issue['title'],
                                                    description=issue['body'],
                                                    body)
-      db_issue = Issue.create(redmine_id: new_redmine_issue['issue']['id'], github_id: issue['number'], github_project_name: p.github_repo_name)
+      db_issue = Issue.create(redmine_id: new_redmine_issue['issue']['id'], github_id: issue['number'], github_repo_name: p.github_repo_name)
       action = 'created'
     end
     puts 'Successfully %s GitHub issue number %s in the "%s" repository/Redmine issue with id %s in the "%s" project!' \
-         %[action, db_issue.github_id.to_s, db_issue.github_project_name, db_issue.redmine_id.to_s, p.redmine_project_name]
+         %[action, db_issue.github_id.to_s, db_issue.github_repo_name, db_issue.redmine_id.to_s, p.redmine_project_name]
+    # get all comments for the github issue for the repository if any
+    if issue['comments'] > 0
+      comments = github_api.get_issues(p.github_repo_owner, p.github_repo_name)
+      action = nil
+      # create redmine notes for each github comment
+      comments.each do |comment|
+        # if issue exists in database just update, otherwise create
+        db_comment = Comment.where(github_comment_id: comment['id'], github_repo_name: p.github_repo_name).first
+        action = nil
+        if db_comment.present?
+          # **** REDMINE REST API DOES NOT SUPPORT JOURNAL NOTE UPDATES
+          # SO THIS IS KIND OF POINTLESS BUT HERE IN CASE THEY ADD IT LATER
+          # FOR NOW SKIPPING THIS BLOCK
+          break
+          redmine_api.update_issue(id=db_issue.redmine_id, :notes => issue['body'])
+          Comment.update(db_comment.id, redmine_journal_id: db_comment.redmine_journal_id, github_comment_id: db_comment.github_comment_id, github_repo_name: db_comment.github_repo_name)
+          action = 'updated'
+        else
+          redmine_api.update_issue(id=db_issue.redmine_id, :notes => issue['body'])
+          updated_issue = redmine_api.get_issue(id=db_issue.redmine_id)
+          new_journal = updated_issue['issue']['journals'].detect {|j| j['notes'] == issue['body']}
+          db_comment = Comment.create(redmine_journal_id: new_journal['id'], github_comment_id: comment['id'], github_repo_name: p.github_repo_name)
+          action = 'created'
+        end
+        puts 'Successfully %s GitHub comment with id %s in the "%s" repository/Redmine journal with id %s in the "%s" project!' \
+             %[action, db_comment.github_comment_id.to_s, db_comment.github_repo_name, db_comment.redmine_journal_id.to_s, p.redmine_project_name]
+      end
+    end
   end
   puts 'Successfully synced all issues from the "%s" GitHub repository with the "%s" Redmine project!' %[p.github_repo_name, p.redmine_project_name]                           
 end
