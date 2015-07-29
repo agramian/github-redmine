@@ -1,5 +1,5 @@
 class AddGithubProjectIdColumnToIssuesTable < ActiveRecord::Migration
   def change
-    add_column :issues, :github_project_name, :string
+    add_column :issues, :github_repo_name, :string
   end
 end
