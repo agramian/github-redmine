@@ -63,6 +63,10 @@ SLACK_AUTH_TOKEN='xxxxx'
 
 DEFAULT_ASSIGNEE='abtin'
 DEFAULT_AUTHOR='abtin'
+
+REDMINE_TEST_PROJECT='GitHub Redmine Integration Test'
+GITHUB_TEST_REPO_OWNER='abtin'
+GITHUB_TEST_REPO_NAME='github-redmine-issues-test'
 ```
 
 #### Field mapping
