@@ -17,9 +17,11 @@ class WebhookTest < Minitest::Test
   def setup
     # reset database
     DatabaseCleaner.start
+    # load seed data
+    load File.dirname(__FILE__) + '/../db/seeds.rb'
     # get project id
-    redmine_api = RedmineApi.new
-    redmine_projects = redmine_api.get_projects()
+    @redmine_api = RedmineApi.new
+    redmine_projects = @redmine_api.get_projects()
     @redmine_project = nil
     redmine_projects.each do |p|
       if p['name'] == ENV['REDMINE_TEST_PROJECT']
@@ -66,8 +68,6 @@ class WebhookTest < Minitest::Test
     }
     # delete all redmine issues for the test project
     system('ruby', File.dirname(__FILE__) + '/../tasks/delete_all_redmine_issues.rb', '-p' , @redmine_project['name'])
-    #
-    system('ruby', File.dirname(__FILE__) + '/../db/seeds.rb')
     super
   end
 
