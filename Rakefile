@@ -1,5 +1,3 @@
-require 'dotenv'
-Dotenv.load
 require './app'
 require 'sinatra/activerecord/rake'
 require 'rake/testtask'

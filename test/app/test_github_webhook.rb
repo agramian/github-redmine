@@ -67,7 +67,6 @@ class GitHubWebhookTest < WebhookTest
       issues = Issue.find(:all)
       assert_equal 1, issues.count
       redmine_priority = @redmine_api.get_issue(Issue.find(:all).first.redmine_id)['issue']['priority']
-      puts github_priority_name, redmine_priority
       assert_equal Priority.where(github_priority_name: github_priority_name).first.redmine_priority_id, redmine_priority['id']
     end
   end

@@ -1,3 +1,5 @@
+require 'dotenv'
+Dotenv.load
 require 'sinatra'
 require 'httparty'
 require 'sinatra/activerecord'
@@ -8,6 +10,7 @@ Dir[File.dirname(__FILE__) + '/helpers/*.rb'].each {|file| require file}
 github_api = GitHubApi.new
 redmine_api = RedmineApi.new
 redmine_helper = RedmineHelper.new
+github_helper = GitHubHelper.new
 
 get '/' do
 	content_type :json
@@ -15,32 +18,52 @@ get '/' do
 end
 
 post '/redmine_hook' do
-	data = JSON.parse(request.body.read)['payload']
-  project = Project.where(:redmine_project_id => data['issue']['project']['id']).first
-	issue = Issue.where(redmine_id: data['issue']['id']).first
-	if issue.present?
-		# update on GitHub
-    puts 'update'
-	else
-    # create on GitHub if non new state
-    puts 'create'
-	end
-	'OK'
+  begin
+  	data = JSON.parse(request.body.read)['payload']
+    # create/edit on GitHub if non new state
+    issue_state = Status.where(redmine_status_id: data['issue']['status']['id']).first.redmine_status_name
+    if issue_state == 'New'
+      puts 'Redmine issue with %s for the "%s" project is still in the "New" state and will not be created in GitHub' \
+           %[data['issue']['id'], data['issue']['project']['name']]
+      status 204
+    else
+      github_helper.process_issue(data['issue'])
+    end
+  	'OK'
+  rescue => exception
+    status 500
+    exception = "Exception occured while processing github_hook!" \
+                "\nBacktrace:\n\t#{exception.backtrace.join("\n\t")}" \
+                "\nMessage: #{exception.message}"
+    puts exception
+    exception
+  end
 end
 
 post '/github_hook' do
-	data = JSON.parse(request.body.read)
-	project = Project.where(:github_repo_name => data['repository']['name'],
-                          :github_repo_owner => data['repository']['owner']['login']).first
-  case data['action']
-  when 'created'
-    # process new comments
-    redmine_helper.process_comment(data['comment'], data['issue']['number'], project)
-  else
-    # process issues
-    redmine_helper.process_issue(data['issue'], project)
+  begin
+  	data = JSON.parse(request.body.read)
+  	project = Project.where(:github_repo_name => data['repository']['name'],
+                            :github_repo_owner => data['repository']['owner']['login']).first
+    case data['action']
+    when 'created'
+      # process new comments
+      redmine_helper.process_comment(data['comment'], data['issue']['number'], project)
+      # hipchat message TODO
+    else
+      # process issues
+      redmine_helper.process_issue(data['issue'], project)
+      # hipchat message TODO
+    end
+  	'OK'
+  rescue => exception
+    status 500
+    exception = "Exception occured while processing github_hook!" \
+                "\nBacktrace:\n\t#{exception.backtrace.join("\n\t")}" \
+                "\nMessage: #{exception.message}"
+    puts exception
+    exception
   end
-	'OK'
 end
 
 after do

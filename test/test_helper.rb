@@ -19,6 +19,8 @@ class WebhookTest < Minitest::Test
     DatabaseCleaner.start
     # load seed data
     load File.dirname(__FILE__) + '/../db/seeds.rb'
+    # timestamp
+    @timestamp = Time.now.getutc
     # get project id
     @redmine_api = RedmineApi.new
     redmine_projects = @redmine_api.get_projects()
@@ -46,6 +48,7 @@ class WebhookTest < Minitest::Test
         data['payload']['issue']['project']['id'] = @redmine_project['id']
         data['payload']['issue']['project']['name'] = ENV['REDMINE_TEST_PROJECT']
         data['payload']['issue']['author']['login'] = ENV['DEFAULT_AUTHOR']
+        data['payload']['issue']['subject'] += " " + @timestamp.to_s
         assignee = data['payload']['issue']['assignee']
         unless assignee.nil?
           data['payload']['issue']['assignee']['login'] = ENV['DEFAULT_ASSIGNEE']

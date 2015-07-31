@@ -95,9 +95,9 @@ class RedmineHelper
       action = 'updated'
     else
       new_redmine_issue = @redmine_api.create_issue(project_id=project.redmine_project_id,
-                                                     subject=issue['title'],
-                                                     description=issue['body'],
-                                                     body)
+                                                    subject=issue['title'],
+                                                    description=issue['body'],
+                                                    body)
       db_issue = Issue.create(redmine_id: new_redmine_issue['issue']['id'],
                               github_id: issue['number'],
                               github_repo_name: project.github_repo_name,
