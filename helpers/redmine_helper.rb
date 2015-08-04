@@ -10,7 +10,7 @@ class RedmineHelper
 
   def get_redmine_priority(issue)
     # get all priorities
-    @priorities = Priority.find(:all)
+    @priorities = Priority.all
     priority_id = nil
     @priorities.each do |priority|
       if issue['labels'].detect {|l| l['name'] == priority.github_priority_name}
@@ -23,7 +23,7 @@ class RedmineHelper
 
   def get_redmine_tracker(issue)
     # get all issue types
-    @issue_types = IssueType.find(:all)    
+    @issue_types = IssueType.all    
     tracker_id = nil
     @issue_types.each do |issue_type|
       if issue['labels'].detect {|l| l['name'] == issue_type.github_issue_type_name}
@@ -36,7 +36,7 @@ class RedmineHelper
 
   def get_redmine_status(issue)
     # get all issue statuses
-    @issue_statuses = Status.find(:all)    
+    @issue_statuses = Status.all    
     # get issue status
     status_id = nil
     # first look for labels indicating status

@@ -15,7 +15,7 @@ end.parse!
 redmine_api = RedmineApi.new
 # get project id
 # get all projects either via command line or activerecord
-projects = options[:projects] ? options[:projects] : Project.find(:all)
+projects = options[:projects] ? options[:projects] : Project.all
 # for each project
 # delete the associated redmine issues
 projects.each do |p|

@@ -16,7 +16,7 @@ github_api = GitHubApi.new
 redmine_api = RedmineApi.new
 redmine_helper = RedmineHelper.new
 # get all projects either via command line or activerecord
-projects = options[:projects] ? options[:projects] : Project.find(:all)
+projects = options[:projects] ? options[:projects] : Project.all
 # for each project
 # create a redmine issue for each github issue
 projects.each do |p|

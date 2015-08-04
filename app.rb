@@ -49,11 +49,11 @@ post '/github_hook' do
     when 'created'
       # process new comments
       redmine_helper.process_comment(data['comment'], data['issue']['number'], project)
-      # hipchat message TODO
+      # slack message TODO
     else
       # process issues
       redmine_helper.process_issue(data['issue'], project)
-      # hipchat message TODO
+      # slack message TODO
     end
   	'OK'
   rescue => exception
