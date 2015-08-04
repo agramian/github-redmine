@@ -27,7 +27,7 @@ Redmine >= 2.4 is required to take advantage of the [REST API](http://www.redmin
 5. Modify the URL to point to the address and port of your server followed by "/redmine_hook" (ex: http://example.com:9494/redmine_hook)
 
 ###### Get your API access key
-1. Go to your redmine instance
+1. Go to your Redmine instance.
 2. Click the "My account" link.
 3. Create or show your "API access key" at the right.
 
@@ -46,11 +46,20 @@ Redmine >= 2.4 is required to take advantage of the [REST API](http://www.redmin
 Create a `.env` file in the project root to define the necessary environment variables.
 Example file below:
 ```
-DATABASE_URL='postgres://localhost/mydb'
-DATABASE_NAME='mydb'
-DATABASE_USERNAME='postgres'
-DATABASE_PASSWORD=''
-DATABASE_HOST='localhost'
+DATABASE_NAME_TEST='testdb'
+DATABASE_USERNAME_TEST='postgres'
+DATABASE_PASSWORD_TEST='xxxx'
+DATABASE_HOST_TEST='localhost'
+
+DATABASE_NAME_DEV='devdb'
+DATABASE_USERNAME_DEV='postgres'
+DATABASE_PASSWORD_DEV='xxxx'
+DATABASE_HOST_DEV='localhost'
+
+DATABASE_NAME_PROD='proddb'
+DATABASE_USERNAME_PROD='postgres'
+DATABASE_PASSWORD_PROD='xxxx'
+DATABASE_HOST_PROD='localhost'
 
 GITHUB_BASE_URL='https://github.example.com/api/v3/'
 GITHUB_AUTH_TOKEN='xxxxxx'
@@ -75,6 +84,7 @@ Modify the `db\seeds.rb` file to map Redmine and GitHub fields.
 #### Installing dependencies
 
 ###### PostgreSQL
+**Mac OSX**
 ```
 # install brew
 ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"
@@ -85,6 +95,25 @@ pg_ctl -D /usr/local/var/postgres -l /usr/local/var/postgres/server.log start
 # stop server
 pg_ctl -D /usr/local/var/postgres stop -s -m fast
 ````
+**Ubuntu**
+```
+# install postgres
+sudo apt-get install postgresql postgresql-contrib postgresql-client
+# create an admin account
+sudo -u postgres createuser --superuser $USER
+sudo -u postgres psql
+# set a password
+\password $USER
+# start/stop/restart
+sudo service postgresql [start|stop|restart]
+```
+**Common**
+Open the PostgreSQL interactive terminal using the `psql` command.  
+Find the pge_hba.conf file by executing `SHOW hba_file;` in the PostreSQL terminal.  
+Exit the PostgreSQL with the '\q' command.  
+Open the pge_hba.conf file and toward the bottom, make sure the METHOD for the connections is set to `md5` or `trust` based on your security preference.  
+
+*Note: a blank password cannot be set. PostgreSQL will not properly authenticate the user.
 
 ###### Bundle and bootstrap
 ```
@@ -92,6 +121,12 @@ pg_ctl -D /usr/local/var/postgres stop -s -m fast
 bundle
 # for production
 bundle install --without test development`
+# create a default database using your username
+createdb $USER
+# create the database for the current environment
+rake db:create
+# create the database for the all environments
+rake db:create:all
 # create and migrate database
 rake db:migrate:reset
 # generate the schema and load the seed data

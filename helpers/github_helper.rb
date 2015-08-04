@@ -27,19 +27,23 @@ class GitHubHelper
       # construct comment body
       comment_body = journal['notes']
       # add author
+=begin
       comment_body += '
 ### Author
 %s' %[journal['author']['login']]
+=end
       # see if there are any new attachments
       new_attachments = [] 
       # check if attachments have changed or are not included in issue body and add
       current_issue_body = github_issue['body']
       github_attachments = current_issue_body.scan(/\!\[.*\]\(.*\)/)
+      current_issue_comments = @github_api.get_comments(project.github_repo_owner, project.github_repo_name, github_issue['number'])
+      current_issue_comments.each do |comment|
+        github_attachments += comment['body'].scan(/\!\[.*\]\(.*\)/)
+      end
       redmine_issue['issue']['attachments'].each do |redmine_attachment|
-        github_attachments.each do |github_attachment|
-          unless github_attachment.include? redmine_attachment['content_url']
+        unless github_attachments.detect {|g| g.include? redmine_attachment['content_url']}
             new_attachments.push(redmine_attachment['content_url'])
-          end
         end
       end
       # process comment      
@@ -48,11 +52,12 @@ class GitHubHelper
         action = 'edited'
         @github_api.edit_comment(project.github_repo_owner,
                                  project.github_repo_name,
-                                 github_issue['number'],
-                                 comment_body)
-        db_comment = Comment.update(redmine_journal_id: journal['id'],
-                                    github_comment_id: db_comment.github_comment_id,
-                                    github_repo_name: project.github_repo_name,)        
+                                 db_comment.github_comment_id,
+                                 comment_body)      
+        Comment.update(db_comment.id,
+                       redmine_journal_id: journal['id'],
+                       github_comment_id: db_comment.github_comment_id,
+                       github_repo_name: project.github_repo_name)        
       else
         unless new_attachments.empty?
           # contruct attachment links to put in comment
@@ -67,11 +72,11 @@ class GitHubHelper
         action = 'created'
         new_github_comment = @github_api.create_comment(project.github_repo_owner,
                                                         project.github_repo_name,
-                                                        github_issue['id'],
+                                                        github_issue['number'],
                                                         comment_body)
         db_comment = Comment.create(redmine_journal_id: journal['id'],
                                     github_comment_id: new_github_comment['id'],
-                                    github_repo_name: project.github_repo_name,)
+                                    github_repo_name: project.github_repo_name)
       end
       puts 'Successfully %s GitHub comment with id %s in the "%s" repository/Redmine journal with id %s in the "%s" project!' \
            %[action, db_comment.github_comment_id.to_s, db_comment.github_repo_name, db_comment.redmine_journal_id.to_s, project.redmine_project_name]      
@@ -109,14 +114,16 @@ class GitHubHelper
       # TODO leave labels which do not match any priority, issue type, or status name in the db
       # construct issue body
       issue_body = issue['description']
+=begin
       # add author
       issue_body += '
 ### Author
-%s' %[issue['author']['login']]    
+%s' %[issue['author']['login']]
+=end
       body = {
         :title => issue['subject'] != github_issue['title'] ? issue['subject'] : nil,
         :body => issue_body != github_issue['body'] ? issue_body : nil,
-        :assignee => issue['assignee'] && (issue['assignee']['login'] != github_issue['assignee']['login'])? issue['assignee']['login'] : nil,
+        :assignee => issue['assignee'] && (!github_issue['assignee'] || (issue['assignee']['login'] != github_issue['assignee']['login'])) ? issue['assignee']['login'] : nil,
         :labels => labels
         }.delete_if { |key, value| value.to_s.strip == '' }
       # edit GitHub issue unless nothing to update
@@ -142,10 +149,12 @@ class GitHubHelper
         }.delete_if { |key, value| value.to_s.strip == '' }
       # construct issue body
       issue_body = issue['description']
+=begin      
       # add author
       issue_body += '
 ### Author
 %s' %[issue['author']['login']]
+=end
       # get attachments to add to issue body
       attachment_links = []
       redmine_issue['issue']['attachments'].each do |redmine_attachment|

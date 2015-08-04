@@ -6,6 +6,7 @@ class RedmineHelper
   def initialize
     # initialize classes
     @redmine_api = RedmineApi.new
+    @github_api = GitHubApi.new
   end
 
   def get_redmine_priority(issue)
@@ -104,8 +105,9 @@ class RedmineHelper
                               status_id: status_id.id)
       action = 'created'
     end
-    puts 'Successfully %s GitHub issue number %s in the "%s" repository/Redmine issue with id %s in the "%s" project!' \
-         %[action, db_issue.github_id.to_s, db_issue.github_repo_name, db_issue.redmine_id.to_s, project.redmine_project_name]
+    puts 'Successfully %s Redmine issue with id %s in the "%s" project/GitHub issue number %s in the "%s" repository!' \
+         %[action, db_issue.redmine_id.to_s, project.redmine_project_name, db_issue.github_id.to_s, db_issue.github_repo_name]
+    handle_comments(issue['number'], project)
     return db_issue
   end
 
@@ -116,6 +118,7 @@ class RedmineHelper
                        %[github_issue_number, project.github_repo_name]
     end
     # construct commend body
+    #x.gsub(/\\r\\n### Author.*/, " ")
     comment_body = {
       :notes => comment['body'],
       :author_name => comment['user']['login']
@@ -139,8 +142,15 @@ class RedmineHelper
       db_comment = Comment.create(redmine_journal_id: new_journal['id'], github_comment_id: comment['id'], github_repo_name: project.github_repo_name)
       action = 'created'
     end
-    puts 'Successfully %s GitHub comment with id %s in the "%s" repository/Redmine journal with id %s in the "%s" project!' \
-         %[action, db_comment.github_comment_id.to_s, db_comment.github_repo_name, db_comment.redmine_journal_id.to_s, project.redmine_project_name]
+    puts 'Successfully Redmine journal with id %s in the "%s" project/%s GitHub comment with id %s in the "%s" repository!' \
+         %[action, db_comment.redmine_journal_id.to_s, project.redmine_project_name, db_comment.github_comment_id.to_s, db_comment.github_repo_name]
+  end
+
+  def handle_comments(github_issue_number, project)
+    comments = @github_api.get_comments(project.github_repo_owner, project.github_repo_name, github_issue_number)
+    comments.each do |comment|
+      process_comment(comment, github_issue_number, project)
+    end
   end
 
 end

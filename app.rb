@@ -3,6 +3,7 @@ Dotenv.load
 require 'sinatra'
 require 'httparty'
 require 'sinatra/activerecord'
+require './config/environments'
 Dir[File.dirname(__FILE__) + '/models/*.rb'].each {|file| require file}
 Dir[File.dirname(__FILE__) + '/helpers/*.rb'].each {|file| require file}
 

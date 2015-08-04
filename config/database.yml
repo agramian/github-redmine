@@ -1,20 +1,20 @@
 test:
  adapter: postgresql
- database: <%=ENV['DATABASE_NAME']%>
- username: <%=ENV['DATABASE_USERNAME']%>
- password: <%=ENV['DATABASE_PASSWORD']%>
- host: <%=ENV['DATABASE_HOST']%>
+ database: <%=ENV['DATABASE_NAME_TEST']%>
+ username: <%=ENV['DATABASE_USERNAME_TEST']%>
+ password: <%=ENV['DATABASE_PASSWORD_TEST']%>
+ host: <%=ENV['DATABASE_HOST_TEST']%>
 
 development:
  adapter: postgresql
- database: <%=ENV['DATABASE_NAME']%>
- username: <%=ENV['DATABASE_USERNAME']%>
- password: <%=ENV['DATABASE_PASSWORD']%>
- host: <%=ENV['DATABASE_HOST']%>
+ database: <%=ENV['DATABASE_NAME_DEV']%>
+ username: <%=ENV['DATABASE_USERNAME_DEV']%>
+ password: <%=ENV['DATABASE_PASSWORD_DEV']%>
+ host: <%=ENV['DATABASE_HOST_DEV']%>
 
 production:
  adapter: postgresql
- database: <%=ENV['DATABASE_NAME']%>
- username: <%=ENV['DATABASE_USERNAME']%>
- password: <%=ENV['DATABASE_PASSWORD']%>
- host: <%=ENV['DATABASE_HOST']%>
+ database: <%=ENV['DATABASE_NAME_PROD']%>
+ username: <%=ENV['DATABASE_USERNAME_PROD']%>
+ password: <%=ENV['DATABASE_PASSWORD_PROD']%>
+ host: <%=ENV['DATABASE_HOST_PROD']%>

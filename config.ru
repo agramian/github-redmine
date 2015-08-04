@@ -2,9 +2,6 @@
 #\ -p 9494
 
 require './app'
-require 'dotenv'
-Dotenv.load
-require './config/environments'
 
 set :lock, true
 

@@ -14,7 +14,7 @@ class GitHubWebhookTest < WebhookTest
     response = post '/github_hook', @github_events['opened']
     response = post '/github_hook', @github_events['comment_created']
     assert_equal 1, Issue.all.count
-    assert_equal 1, Comment.all.count
+    assert_equal 2, Comment.all.count
     assert_equal 200, response.status
   end
 
