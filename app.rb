@@ -32,7 +32,7 @@ post '/redmine_hook' do
   	'OK'
   rescue => exception
     status 500
-    exception = "Exception occured while processing github_hook!" \
+    exception = "Exception occured while processing redmine_hook!" \
                 "\nBacktrace:\n\t#{exception.backtrace.join("\n\t")}" \
                 "\nMessage: #{exception.message}"
     puts exception

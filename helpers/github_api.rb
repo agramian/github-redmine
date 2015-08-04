@@ -70,12 +70,12 @@ class GitHubApi
                                     :headers => @@headers)
   end
 
-  def get_comments(owner, repository, issue_id)
+  def get_comments(owner, repository, issue_number)
     $page = 1;
     $comments = [];
     loop do
       response = @@request_helper.request('GET',
-                                          ENV['GITHUB_BASE_URL'] + 'repos/%s/%s/issues/%s/comments' %[owner, repository, issue_id.to_s],
+                                          ENV['GITHUB_BASE_URL'] + 'repos/%s/%s/issues/%s/comments' %[owner, repository, issue_number.to_s],
                                           :headers => @@headers,
                                           :query => {'page' => $page.to_s})
       if response.any?;
