@@ -14,6 +14,7 @@ end
 # PROJECTS
 projects = [
   ['g3qa', 'Guidebook', 50, 'Guidebook Builder'],
+  ['github-redmine-issues-test', 'abtin', 53, 'GitHub Redmine Integration Test']
 ]
 projects.each do |github_repo_name, github_repo_owner, redmine_project_id, redmine_project_name|
   Project.create(github_repo_name: github_repo_name,
