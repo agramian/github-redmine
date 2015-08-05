@@ -39,31 +39,34 @@ class RedmineHelper
     # get all issue statuses
     @issue_statuses = Status.all    
     # get issue status
-    status_id = nil
+    status = nil
     # first look for labels indicating status
-    @issue_statuses.each do |status|
-      if issue['labels'].detect {|l| l['name'] == status.github_status_name}
-        status_id = status
+    @issue_statuses.each do |s|
+      if issue['labels'].detect {|l| l['name'] == s.github_status_name}
+        status = s
         break
       end
     end
-    if status_id.nil?
-      # set to closed if state is closed
-      if issue['state'] == 'closed'
-        status_id = Status.where(github_status_name: 'closed').first
+    if status.nil?
       # set to in progress if there is an assignee
-      elsif issue['assignee']
-        status_id = Status.where(github_status_name: 'In Progress').first
+      if issue['assignee']
+        status = Status.where(github_status_name: 'In Progress').first
       else
-        status_id = Status.where(github_status_name: 'open').first
+        status = Status.where(github_status_name: 'open').first
       end
     end
-    return status_id
+    # set to closed if state is closed and redmine status matching label is not closed type
+    status_match = @redmine_api.get_statuses()['issue_statuses'].select{|s| s['id'] ==  status.redmine_status_id};
+    if issue['state'] == 'closed' && !status_match.first['is_closed']
+      status = Status.where(github_status_name: 'closed').first
+    end
+
+    return status
   end
 
   def process_issue(issue, project)
     # get issue status
-    status_id = get_redmine_status(issue)
+    status = get_redmine_status(issue)
     # get priority
     priority_id = get_redmine_priority(issue)
     # get tracker
@@ -72,7 +75,7 @@ class RedmineHelper
     assignee = @redmine_api.get_users(issue['assignee'] ? issue['assignee']['login'] : ENV['DEFAULT_ASSIGNEE'])    
     # construct optional post data
     body = {
-      :status_id => status_id ? status_id.redmine_status_id : nil,
+      :status_id => status ? status.redmine_status_id : nil,
       :priority_id => priority_id,
       :tracker_id => tracker_id,
       :assigned_to_id => assignee['total_count'] > 0 ? assignee['users'][0]['id'] : nil,
@@ -92,7 +95,7 @@ class RedmineHelper
                    redmine_id: db_issue.redmine_id,
                    github_id: db_issue.github_id,
                    github_repo_name: db_issue.github_repo_name,
-                   status_id: status_id.id)
+                   status_id: status.id)
       action = 'updated'
     else
       new_redmine_issue = @redmine_api.create_issue(project_id=project.redmine_project_id,
@@ -102,7 +105,7 @@ class RedmineHelper
       db_issue = Issue.create(redmine_id: new_redmine_issue['issue']['id'],
                               github_id: issue['number'],
                               github_repo_name: project.github_repo_name,
-                              status_id: status_id.id)
+                              status_id: status.id)
       action = 'created'
     end
     puts 'Successfully %s Redmine issue with id %s in the "%s" project/GitHub issue number %s in the "%s" repository!' \
