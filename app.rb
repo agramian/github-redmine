@@ -22,10 +22,10 @@ post '/redmine_hook' do
   begin
   	data = JSON.parse(request.body.read)['payload']
     # create/edit on GitHub if non new state
-    issue_state = Status.where(redmine_status_id: data['issue']['status']['id']).first.redmine_status_name
-    if issue_state == 'New'
-      puts 'Redmine issue with %s for the "%s" project is still in the "New" state and will not be created in GitHub' \
-           %[data['issue']['id'], data['issue']['project']['name']]
+    issue_state = Status.where(redmine_status_id: data['issue']['status']['id']).first
+    if issue_state.github_status_name == 'open'
+      puts 'Redmine issue with %s for the "%s" project is still in the "%s" state and will not be created in GitHub' \
+           %[data['issue']['id'], data['issue']['project']['name'], issue_state.redmine_status_name]
       status 204
     else
       github_helper.process_issue(data['issue'])
