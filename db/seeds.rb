@@ -34,7 +34,7 @@ statuses = [
   ['In QA',         25, 'In QA'],
   ['In Progress',   2,  'In Progress'],
   ['open',          22, 'To Do'],
-  ['closed',        5,  'Done'],
+  ['closed',        23,  'Done']
 ]
 statuses.each do |github_status_name, redmine_status_id, redmine_status_name|
   Status.create(github_status_name: github_status_name,

@@ -7,6 +7,7 @@ class RedmineHelper
     # initialize classes
     @redmine_api = RedmineApi.new
     @github_api = GitHubApi.new
+    @redmine_statuses = @redmine_api.get_statuses()['issue_statuses']
   end
 
   def get_redmine_priority(issue)
@@ -56,11 +57,10 @@ class RedmineHelper
       end
     end
     # set to closed if state is closed and redmine status matching label is not closed type
-    status_match = @redmine_api.get_statuses()['issue_statuses'].select{|s| s['id'] ==  status.redmine_status_id};
+    status_match = @redmine_statuses.select{|s| s['id'] ==  status.redmine_status_id}
     if issue['state'] == 'closed' && !status_match.first['is_closed']
       status = Status.where(github_status_name: 'closed').first
     end
-
     return status
   end
 
