@@ -107,13 +107,13 @@ sudo -u postgres psql
 # start/stop/restart
 sudo service postgresql [start|stop|restart]
 ```
-**Common**
+**Common**  
 Open the PostgreSQL interactive terminal using the `psql` command.  
 Find the pge_hba.conf file by executing `SHOW hba_file;` in the PostreSQL terminal.  
-Exit the PostgreSQL with the '\q' command.  
+Exit the PostgreSQL with the `\q` command.  
 Open the pge_hba.conf file and toward the bottom, make sure the METHOD for the connections is set to `md5` or `trust` based on your security preference.  
 
-*Note: a blank password cannot be set. PostgreSQL will not properly authenticate the user.
+*Note: a blank password cannot be set. PostgreSQL will not properly authenticate the user.*
 
 ###### Bundle and bootstrap
 ```
@@ -156,11 +156,11 @@ Running
 `bundle exec guard` to initiate file watch and run tests on every change.  
 
 ### Debugging
-`racksh` to start console
-Ex:
-`$rack.get '/test-endpoint'`
-`$rack.post "/users", :user => { :name => "Jola", :email => "jola@misi.ak" }`
-`reload!` to restart console after changes
+`racksh` to start console  
+Ex:  
+`$rack.get '/test-endpoint'`  
+`$rack.post "/users", :user => { :name => "Jola", :email => "jola@misi.ak" }`  
+`reload!` to restart console after changes  
 [More info](https://github.com/sickill/racksh)  
 
 ### Production
